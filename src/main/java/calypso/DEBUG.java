@@ -1,4 +1,4 @@
-package drools_robocode;
+package calypso;
 
 import java.util.List;
 

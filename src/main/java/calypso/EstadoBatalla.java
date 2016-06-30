@@ -3,12 +3,8 @@
  * and open the template in the editor.
  */
 
-package drools_robocode;
+package calypso;
 
-/**
- *
- * @author ribadas
- */
 public class EstadoBatalla {
     private double anchoCampo;
     private double altoCampo;
@@ -73,6 +69,5 @@ public class EstadoBatalla {
     public void setTiempo(long tiempo) {
         this.tiempo = tiempo;
     }
-    
-    
+       
 }

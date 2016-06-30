@@ -3,20 +3,16 @@
  * and open the template in the editor.
  */
 
-package drools_robocode;
+package calypso;
 
 import robocode.AdvancedRobot;
 
-/**
- *
- * @author ribadas
- */
 public class Accion {
     private int        tipo;
     private double     parametro;
     private int        prioridad;
 
-    private AdvancedRobot robot;   // Referncia al robot que ejecutara la accion
+    private AdvancedRobot robot;   // Robo que executará as ações
 
     public static final int AVANZAR=1;
     public static final int RETROCEDER=2;

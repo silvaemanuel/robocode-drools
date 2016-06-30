@@ -3,14 +3,10 @@
  * and open the template in the editor.
  */
 
-package drools_robocode;
+package calypso;
 
 import robocode.AdvancedRobot;
 
-/**
- *
- * @author ribadas
- */
 public class EstadoRobot {
     private final double distanceRemaining;
     private final double energy;
