@@ -1,7 +1,3 @@
-/*
- * To change this template, choose Tools | Templates
- * and open the template in the editor.
- */
 package calypso;
 
 import java.awt.Color;
@@ -33,9 +29,9 @@ public class Chimbinha extends AdvancedRobot {
     public static String CONSULTA_ACCIONES = "consulta_acciones";
     
     private KnowledgeBuilder kbuilder;
-    private KnowledgeBase kbase;   // Base de conocimeintos
-    private StatefulKnowledgeSession ksession;  // Memoria activa
-    private Vector<FactHandle> referenciasHechosActuales = new Vector<FactHandle>();
+    private KnowledgeBase kbase;   // Base de conhecimentos
+    private StatefulKnowledgeSession ksession;  // seriam os conhecimentos da sessão atual
+    private Vector<FactHandle> referenciasHechosActuales = new Vector<FactHandle>(); //vetor que guarda as coisas que ocorreram
 
     
     public Chimbinha(){
@@ -45,12 +41,12 @@ public class Chimbinha extends AdvancedRobot {
     public void run() {
     	DEBUG.habilitarModoDebug(System.getProperty("robot.debug", "true").equals("true"));    	
     	
-    	setColors(Color.red,Color.yellow,Color.black); // body,gun,radar
+    	setColors(Color.black,Color.yellow,Color.black); // body,gun,radar
     	
-    	// Crear Base de Conocimiento y cargar reglas
+    	// Cria a base de conhecimento
     	crearBaseConocimiento();
 
-        // Hacer que movimiento de tanque, radar y cañon sean independientes
+        // Inicializa o movimento do radar, do canhão e do tanque em si
         setAdjustGunForRobotTurn(true);
         setAdjustRadarForGunTurn(true);
         setAdjustRadarForRobotTurn(true);
@@ -58,25 +54,24 @@ public class Chimbinha extends AdvancedRobot {
 
         while (true) {
         	DEBUG.mensaje("inicio turno");
-            //cargarEventos();  // se hace en los metodos onXXXXXEvent()
             cargarEstadoRobot();
             cargarEstadoBatalla();
 
-            // Lanzar reglas
+            // Inicia todas as regras
             DEBUG.mensaje("hechos en memoria activa");
             DEBUG.volcarHechos(ksession);           
             ksession.fireAllRules();
             limpiarHechosIteracionAnterior();
 
-            // Recuperar acciones
+            // Recupera as ações guardadas no vetor
             Vector<Accion> acciones = recuperarAcciones();
             DEBUG.mensaje("acciones resultantes");
             DEBUG.volcarAcciones(acciones);
 
-            // Ejecutar Acciones
+            // Executa as ações
             ejecutarAcciones(acciones);
         	DEBUG.mensaje("fin turno\n");
-            execute();  // Informa a robocode del fin del turno (llamada bloqueante)
+            execute();
 
         }
 
@@ -130,10 +125,10 @@ public class Chimbinha extends AdvancedRobot {
         Vector<Accion> listaAcciones = new Vector<Accion>();
 
         for (QueryResultsRow resultado : ksession.getQueryResults(Chimbinha.CONSULTA_ACCIONES)) {
-            accion = (Accion) resultado.get("accion");  // Obtener el objeto accion
-            accion.setRobot(this);                      // Vincularlo al robot actual
+            accion = (Accion) resultado.get("accion");  
+            accion.setRobot(this);                      
             listaAcciones.add(accion);
-            ksession.retract(resultado.getFactHandle("accion")); // Eliminar el hecho de la memoria activa
+            ksession.retract(resultado.getFactHandle("accion")); 
         }
 
         return listaAcciones;
@@ -145,7 +140,7 @@ public class Chimbinha extends AdvancedRobot {
         }
     }
 
-    // Insertar en la memoria activa los distintos tipos de eventos recibidos 
+    // Insere no evento os eventos baseados nos fatos que ocorreram atualmente
     @Override
     public void onBulletHit(BulletHitEvent event) {
           referenciasHechosActuales.add(ksession.insert(event));
