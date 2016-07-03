@@ -4,18 +4,13 @@ import calypso.*;
 import robocode.*;
 import robocode.ScannedRobotEvent;
 
-// Se debe incluir SIEMPRE la definición de esta consulta, la usa el robot para recuperar las acciones
 query "consulta_acciones"
   accion: Accion()
 end
 
+// REGRAS:
 
-// 
-// REGLAS
-//
-
-
-// Hecho para almacenar informacion de la victima seleccionada (si existe)
+// Declaração de uma vítima quando encontrada e de seus valores a serem utilizados pelas regras
 declare Victima
    nombre: String
    x: double
@@ -23,20 +18,18 @@ declare Victima
    distancia: double
 end
 
-
-// Regla de conveniencia: elimina acciones del mismo tipo con menor prioridad
-// Si no se hiciera el robot ejecutaría la última acción insertada sin atender a su pioridad
+// Regra utilizada para eliminar execução de ações de mesmo tipo com prioridade menor
 rule "depurar acciones del mismo tipo"
 when
 	$accion1: Accion($tipo: tipo, $prioridad1: prioridad)
 	$accion2: Accion(tipo==$tipo, $prioridad2: prioridad)
 	eval ($prioridad1 > $prioridad2)
 then
-    retract($accion2);     // Elimina la accion menos prioritaria 
+    retract($accion2);
     System.out.println("regla 1");
 end
 
-// Cuando no hay robots detectados forzar un giro completo del radar
+// Essa regra faz com que o radar fique girando para a direita até que um inimigo seja escaneado
 rule "sin robots a la vista -> giro completo del radar"
 when
 	not (exists ScannedRobotEvent())
@@ -45,16 +38,7 @@ then
 	System.out.println("regla 2");
 end
 
-// // No necesaria ¿?
-//rule "sin victima fijada -> giro completo del radar"
-//when
-//      not (exists Victima())
-//then
-//      insert (new Accion(Accion.GIRAR_RADAR_DER, 360, 1));
-//      System.out.println("regla 2-bis");
-//end
-
-// Cuando esta parado y no hay victima girar radar 360 y moverse al azar
+// Essa regra complementa a primeira e a substitui, além de girar o radar, o agente avança para tentar chegar em uma posição do campo de batalha onde haja agentes inimigos
 rule "parado sin victima -> moverse al azar (girar+avanzar)"
 when
   EstadoRobot( distanceRemaining == 0 )
@@ -69,8 +53,7 @@ then
   System.out.println("regla 3");
 end
 
-
-// Victima detectada por radar, actualizar su localizacion e ir hacia ella apuntándola con cañon y radar
+// Quando há uma vítima escaneada, o robô atualiza seus dados no controle de estado da vítima e se move até ela
 rule "victima detectada -> actualizar datos e ir hacia ella"
    when
       $datosVictima: Victima ($nombreVictima: nombre)
@@ -90,10 +73,8 @@ rule "victima detectada -> actualizar datos e ir hacia ella"
       insert(new Accion(Accion.AVANZAR, ($victimaEscaneada.getDistance()-100), 1));
 end
 
-
-
-// Victima detectada por radar, si está en el punto de mira (anguloRelativoCañón == anguloRelativoVictima) con un margen de 2 grados, disparar con el maximo disponible
-//  (se activará a lavez que la regla anterior)
+// Quando uma vítima é detectada e está à uma distância mínima, o agente dispara tiros com o máximo de energia possível
+// Essa regra substituirá a regra anterior
 rule "victima en punto de mira -> disparar"
    when
       $status : EstadoRobot()
@@ -106,9 +87,7 @@ rule "victima en punto de mira -> disparar"
       System.out.println("Victima "+$nombreVictima+" a tiro => disparar");
 end
 
-
-
-// Cuando no hay una víctima señalada y se escanea un robot,  anotarlo como víctima e ir hacia él apuntando radar y cañón
+// Tomar uma vítima e ir até ela
 rule "sin victima -> tomar la primera que aparezca"
 when
 	not (exists Victima())
@@ -132,7 +111,7 @@ then
       System.out.println("regla 6"); 
 end
 
-// Eliminar el hecho Victima() actual una vez liquidada
+// Quando uma vítima é eliminada, essa regra à tira do estado de vítima
 rule "muerte de la victima"
 when
    $victima: Victima ($nombreVictima: nombre)
@@ -142,9 +121,7 @@ then
    System.out.println("Uno menos");
 end
 
-
-// Al chocar con un muro, salir "rebotado" en el angulo opuesto
-//   (tiene prioridad 5 para evitar que otras acciones "normales" nos hagan quedar estancados)  
+// Regra responsável por retirar o agente da parede, ela tem uma prioridade maior para que o agente não possa ser travado por outros agentes
 rule "choque con muro"
 when
    HitWallEvent($anguloRelativo: bearing)
@@ -154,8 +131,7 @@ then
 end
 
 
-// Al chocar con victima, retroceder
-//   (tiene prioridad 5 para evitar que otras acciones "normales" nos hagan quedar estancados)  
+// Ao se chocar com uma vítima retroceder
 rule "choque con victima"
 when
    HitRobotEvent($nombre: name, $anguloRelativo: bearing)
@@ -164,8 +140,7 @@ then
    insert(new Accion(Accion.RETROCEDER, 100, 5));
 end
 
-// Al chocar con otro robot que no sea la víctima (o si esta no existe), salir "rebotado" en el angulo opuesto
-//   (tiene prioridad 5 para evitar que otras acciones "normales" nos hagan quedar estancados)  
+// Ao se chocar com outra vítima, continuaremos avançando de modo que a outra vítima retroceda e estanque numa parede
 rule "choque con otro robot"
 when
    HitRobotEvent($nombre: name, $anguloRelativo: bearing)

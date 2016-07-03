@@ -6,7 +6,6 @@ public class Accion {
     private int        tipo;
     private double     parametro;
     private int        prioridad;
-
     private AdvancedRobot robot;   // Robo que executará as ações
 
     public static final int AVANZAR=1;
@@ -53,8 +52,6 @@ public class Accion {
     public void setPrioridad(int prioridad) {
         this.prioridad = prioridad;
     }
-
-
 
     public void iniciarEjecucion() {
         if (this.robot != null) {
